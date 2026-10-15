@@ -1,0 +1,509 @@
+[
+  {
+    "id": "3.1",
+    "title": "Check database connection",
+    "code": "RETURN 'Neo4j connection successful' AS status;",
+    "records": [
+      {
+        "status": "Neo4j connection successful"
+      }
+    ],
+    "time_ms": 12
+  },
+  {
+    "id": "Query 1",
+    "title": "Create a customer (Aarav)",
+    "code": "MERGE (c:Customer {customerId: 101})\nSET c.name = 'Aarav',\n    c.email = 'aarav@example.com'\nRETURN c;",
+    "records": [
+      {
+        "c": {
+          "name": "Aarav",
+          "customerId": 101,
+          "email": "aarav@example.com"
+        }
+      }
+    ],
+    "time_ms": 36
+  },
+  {
+    "id": "Query 2",
+    "title": "Create a vendor (Spice House)",
+    "code": "MERGE (v:Vendor {vendorId: 201})\nSET v.name = 'Spice House',\n    v.cuisine = 'Indian',\n    v.location = 'Chennai'\nRETURN v;",
+    "records": [
+      {
+        "v": {
+          "name": "Spice House",
+          "vendorId": 201,
+          "cuisine": "Indian",
+          "location": "Chennai"
+        }
+      }
+    ],
+    "time_ms": 24
+  },
+  {
+    "id": "Query 3",
+    "title": "Create food item and connect to vendor",
+    "code": "MATCH (v:Vendor {vendorId: 201})\nMERGE (f:FoodItem {itemId: 301})\nSET f.name = 'Paneer Biryani',\n    f.price = 220,\n    f.category = 'Main Course'\nMERGE (f)-[:SOLD_BY]->(v)\nRETURN f, v;",
+    "records": [
+      {
+        "f": {
+          "itemId": 301,
+          "price": 220,
+          "name": "Paneer Biryani",
+          "category": "Main Course"
+        },
+        "v": {
+          "name": "Spice House",
+          "vendorId": 201,
+          "cuisine": "Indian",
+          "location": "Chennai"
+        }
+      }
+    ],
+    "time_ms": 48
+  },
+  {
+    "id": "Query 4",
+    "title": "Create order and connect to customer",
+    "code": "MATCH (c:Customer {customerId: 101})\nMERGE (o:Order {orderId: 401})\nSET o.status = 'Placed',\n    o.totalAmount = 220,\n    o.orderDate = date()\nMERGE (c)-[:PLACES]->(o)\nRETURN c, o;",
+    "records": [
+      {
+        "c": {
+          "name": "Aarav",
+          "customerId": 101,
+          "email": "aarav@example.com"
+        },
+        "o": {
+          "totalAmount": 220,
+          "orderId": 401,
+          "orderDate": "2026-10-14",
+          "status": "Placed"
+        }
+      }
+    ],
+    "time_ms": 50
+  },
+  {
+    "id": "Query 5",
+    "title": "Connect order to food item",
+    "code": "MATCH (o:Order {orderId: 401}),\n      (f:FoodItem {itemId: 301})\nMERGE (o)-[r:CONTAINS]->(f)\nSET r.quantity = 1\nRETURN o, r, f;",
+    "records": [
+      {
+        "o": {
+          "totalAmount": 220,
+          "orderId": 401,
+          "orderDate": "2026-10-14",
+          "status": "Placed"
+        },
+        "r": [
+          {
+            "totalAmount": 220,
+            "orderId": 401,
+            "orderDate": "2026-10-14",
+            "status": "Placed"
+          },
+          "CONTAINS",
+          {
+            "itemId": 301,
+            "price": 220,
+            "name": "Paneer Biryani",
+            "category": "Main Course"
+          }
+        ],
+        "f": {
+          "itemId": 301,
+          "price": 220,
+          "name": "Paneer Biryani",
+          "category": "Main Course"
+        }
+      }
+    ],
+    "time_ms": 43
+  },
+  {
+    "id": "Review Link",
+    "title": "Link sample review to Aarav and Spice House",
+    "code": "MATCH (c:Customer {customerId: 101}), (v:Vendor {vendorId: 201})\nMERGE (r:Review {reviewId: 701})\nSET r.rating = 5, r.comment = 'Authentic spices and very fast delivery!'\nMERGE (c)-[:WROTE]->(r)\nMERGE (r)-[:ABOUT]->(v)\nRETURN c, r, v;",
+    "records": [
+      {
+        "c": {
+          "name": "Aarav",
+          "customerId": 101,
+          "email": "aarav@example.com"
+        },
+        "r": {
+          "rating": 5,
+          "comment": "Authentic spices and very fast delivery!",
+          "reviewId": 701
+        },
+        "v": {
+          "name": "Spice House",
+          "vendorId": 201,
+          "cuisine": "Indian",
+          "location": "Chennai"
+        }
+      }
+    ],
+    "time_ms": 76
+  },
+  {
+    "id": "3.2",
+    "title": "Check available node labels and records",
+    "code": "MATCH (n)\nRETURN labels(n) AS labels, count(*) AS records\nORDER BY records DESC;",
+    "records": [
+      {
+        "labels": [
+          "FoodItem"
+        ],
+        "records": 5
+      },
+      {
+        "labels": [
+          "Vendor"
+        ],
+        "records": 3
+      },
+      {
+        "labels": [
+          "Customer"
+        ],
+        "records": 2
+      },
+      {
+        "labels": [
+          "Review"
+        ],
+        "records": 2
+      },
+      {
+        "labels": [
+          "Order"
+        ],
+        "records": 1
+      }
+    ],
+    "time_ms": 19
+  },
+  {
+    "id": "3.3",
+    "title": "View sample of graph nodes and relationships",
+    "code": "MATCH (n)-[r]->(m)\nRETURN type(r) AS relationship, labels(n)[0] AS fromNode, labels(m)[0] AS toNode, count(*) AS count\nORDER BY count DESC;",
+    "records": [
+      {
+        "relationship": "SOLD_BY",
+        "fromNode": "FoodItem",
+        "toNode": "Vendor",
+        "count": 5
+      },
+      {
+        "relationship": "WROTE",
+        "fromNode": "Customer",
+        "toNode": "Review",
+        "count": 2
+      },
+      {
+        "relationship": "ABOUT",
+        "fromNode": "Review",
+        "toNode": "Vendor",
+        "count": 2
+      },
+      {
+        "relationship": "PLACES",
+        "fromNode": "Customer",
+        "toNode": "Order",
+        "count": 1
+      },
+      {
+        "relationship": "CONTAINS",
+        "fromNode": "Order",
+        "toNode": "FoodItem",
+        "count": 1
+      }
+    ],
+    "time_ms": 25
+  },
+  {
+    "id": "Query 6",
+    "title": "Read all customers",
+    "code": "MATCH (c:Customer)\nRETURN c.customerId, c.name, c.email\nORDER BY c.name;",
+    "records": [
+      {
+        "c.customerId": 101,
+        "c.name": "Aarav",
+        "c.email": "aarav@example.com"
+      },
+      {
+        "c.customerId": 102,
+        "c.name": "Priya",
+        "c.email": "priya@example.com"
+      }
+    ],
+    "time_ms": 32
+  },
+  {
+    "id": "Query 7",
+    "title": "Read all vendors",
+    "code": "MATCH (v:Vendor)\nRETURN v.vendorId, v.name, v.cuisine, v.location\nORDER BY v.name;",
+    "records": [
+      {
+        "v.vendorId": 202,
+        "v.name": "Curry Leaf",
+        "v.cuisine": "Indian",
+        "v.location": "Chennai"
+      },
+      {
+        "v.vendorId": 203,
+        "v.name": "Dragon Wok",
+        "v.cuisine": "Chinese",
+        "v.location": "Bangalore"
+      },
+      {
+        "v.vendorId": 201,
+        "v.name": "Spice House",
+        "v.cuisine": "Indian",
+        "v.location": "Chennai"
+      }
+    ],
+    "time_ms": 24
+  },
+  {
+    "id": "Query 8",
+    "title": "List food items under a chosen price (< 300)",
+    "code": "MATCH (f:FoodItem)\nWHERE f.price < 300\nRETURN f.name, f.price, f.category\nORDER BY f.price ASC;",
+    "records": [
+      {
+        "f.name": "Masala Dosa",
+        "f.price": 110,
+        "f.category": "Breakfast"
+      },
+      {
+        "f.name": "Paneer Biryani",
+        "f.price": 220,
+        "f.category": "Main Course"
+      },
+      {
+        "f.name": "Schezwan Noodles",
+        "f.price": 240,
+        "f.category": "Main Course"
+      }
+    ],
+    "time_ms": 24
+  },
+  {
+    "id": "Query 9",
+    "title": "Find orders for a specific customer (101)",
+    "code": "MATCH (c:Customer {customerId: 101})-[:PLACES]->(o:Order)\nRETURN c.name, o.orderId, o.status, o.totalAmount\nORDER BY o.orderDate DESC;",
+    "records": [
+      {
+        "c.name": "Aarav",
+        "o.orderId": 401,
+        "o.status": "Placed",
+        "o.totalAmount": 220
+      }
+    ],
+    "time_ms": 48
+  },
+  {
+    "id": "Query 10",
+    "title": "Update order status",
+    "code": "MATCH (o:Order {orderId: 401})\nSET o.status = 'Delivered'\nRETURN o.orderId, o.status;",
+    "records": [
+      {
+        "o.orderId": 401,
+        "o.status": "Delivered"
+      }
+    ],
+    "time_ms": 24
+  },
+  {
+    "id": "Query 11",
+    "title": "Count orders per customer",
+    "code": "MATCH (c:Customer)-[:PLACES]->(o:Order)\nRETURN c.name AS customer,\n       count(o) AS totalOrders\nORDER BY totalOrders DESC;",
+    "records": [
+      {
+        "customer": "Aarav",
+        "totalOrders": 1
+      }
+    ],
+    "time_ms": 30
+  },
+  {
+    "id": "Query 12",
+    "title": "Find five most expensive food items",
+    "code": "MATCH (f:FoodItem)\nRETURN f.name, f.price\nORDER BY f.price DESC\nLIMIT 5;",
+    "records": [
+      {
+        "f.name": "Tandoori Platter",
+        "f.price": 450
+      },
+      {
+        "f.name": "Butter Chicken",
+        "f.price": 320
+      },
+      {
+        "f.name": "Schezwan Noodles",
+        "f.price": 240
+      },
+      {
+        "f.name": "Paneer Biryani",
+        "f.price": 220
+      },
+      {
+        "f.name": "Masala Dosa",
+        "f.price": 110
+      }
+    ],
+    "time_ms": 21
+  },
+  {
+    "id": "Query 13",
+    "title": "Trace customer -> order -> food item -> vendor",
+    "code": "MATCH (c:Customer)-[:PLACES]->(o:Order)\n      -[:CONTAINS]->(f:FoodItem)\n      -[:SOLD_BY]->(v:Vendor)\nRETURN c.name AS customer,\n       o.orderId AS orderId,\n       f.name AS foodItem,\n       v.name AS vendor;",
+    "records": [
+      {
+        "customer": "Aarav",
+        "orderId": 401,
+        "foodItem": "Paneer Biryani",
+        "vendor": "Spice House"
+      }
+    ],
+    "time_ms": 47
+  },
+  {
+    "id": "Query 14",
+    "title": "Count food items sold by each vendor",
+    "code": "MATCH (f:FoodItem)-[:SOLD_BY]->(v:Vendor)\nRETURN v.name AS vendor,\n       count(f) AS menuItems\nORDER BY menuItems DESC;",
+    "records": [
+      {
+        "vendor": "Curry Leaf",
+        "menuItems": 3
+      },
+      {
+        "vendor": "Dragon Wok",
+        "menuItems": 1
+      },
+      {
+        "vendor": "Spice House",
+        "menuItems": 1
+      }
+    ],
+    "time_ms": 31
+  },
+  {
+    "id": "Query 15",
+    "title": "Basic vendor recommendations from order history",
+    "code": "MATCH (c:Customer {customerId: 101})\n      -[:PLACES]->(:Order)\n      -[:CONTAINS]->(:FoodItem)\n      -[:SOLD_BY]->(v:Vendor)\nRETURN v.name AS vendor,\n       v.cuisine AS cuisine,\n       count(*) AS matchingOrderPaths\nORDER BY matchingOrderPaths DESC;",
+    "records": [
+      {
+        "vendor": "Spice House",
+        "cuisine": "Indian",
+        "matchingOrderPaths": 1
+      }
+    ],
+    "time_ms": 50
+  },
+  {
+    "id": "Query 16",
+    "title": "Find vendors in the same cuisine as vendor 201",
+    "code": "MATCH (base:Vendor {vendorId: 201})\nMATCH (other:Vendor)\nWHERE other.cuisine = base.cuisine\n  AND other.vendorId <> base.vendorId\nRETURN other.name, other.cuisine, other.location;",
+    "records": [
+      {
+        "other.name": "Curry Leaf",
+        "other.cuisine": "Indian",
+        "other.location": "Chennai"
+      }
+    ],
+    "time_ms": 53
+  },
+  {
+    "id": "Query 19",
+    "title": "Create/link a payment",
+    "code": "MATCH (o:Order {orderId: 401})\nMERGE (p:Payment {paymentId: 501})\nSET p.amount = 220,\n    p.method = 'UPI',\n    p.status = 'Paid'\nMERGE (o)-[:HAS_PAYMENT]->(p)\nRETURN o, p;",
+    "records": [
+      {
+        "o": {
+          "totalAmount": 220,
+          "orderId": 401,
+          "orderDate": "2026-10-14",
+          "status": "Delivered"
+        },
+        "p": {
+          "amount": 220,
+          "method": "UPI",
+          "paymentId": 501,
+          "status": "Paid"
+        }
+      }
+    ],
+    "time_ms": 50
+  },
+  {
+    "id": "Query 20",
+    "title": "Create/link a delivery partner",
+    "code": "MATCH (o:Order {orderId: 401})\nMERGE (d:DeliveryPartner {partnerId: 601})\nSET d.name = 'Rohan',\n    d.availability = 'Busy'\nMERGE (o)-[:ASSIGNED_TO]->(d)\nRETURN o, d;",
+    "records": [
+      {
+        "o": {
+          "totalAmount": 220,
+          "orderId": 401,
+          "orderDate": "2026-10-14",
+          "status": "Delivered"
+        },
+        "d": {
+          "name": "Rohan",
+          "partnerId": 601,
+          "availability": "Busy"
+        }
+      }
+    ],
+    "time_ms": 58
+  },
+  {
+    "id": "Query 17",
+    "title": "Find orders and their delivery partners",
+    "code": "MATCH (o:Order)-[:ASSIGNED_TO]->(d:DeliveryPartner)\nRETURN o.orderId, o.status, d.name AS deliveryPartner;",
+    "records": [
+      {
+        "o.orderId": 401,
+        "o.status": "Delivered",
+        "deliveryPartner": "Rohan"
+      }
+    ],
+    "time_ms": 27
+  },
+  {
+    "id": "Query 18",
+    "title": "Find customer reviews and reviewed vendors",
+    "code": "MATCH (c:Customer)-[:WROTE]->(r:Review)-[:ABOUT]->(v:Vendor)\nRETURN c.name AS customer,\n       v.name AS vendor,\n       r.rating AS rating,\n       r.comment AS comment\nORDER BY rating DESC;",
+    "records": [
+      {
+        "customer": "Aarav",
+        "vendor": "Spice House",
+        "rating": 5,
+        "comment": "Authentic spices and very fast delivery!"
+      },
+      {
+        "customer": "Priya",
+        "vendor": "Curry Leaf",
+        "rating": 4,
+        "comment": "Delicious crispy dosas and great sambar."
+      }
+    ],
+    "time_ms": 38
+  },
+  {
+    "id": "Query 21",
+    "title": "Find completed/delivered orders",
+    "code": "MATCH (c:Customer)-[:PLACES]->(o:Order)\nWHERE o.status = 'Delivered'\nRETURN c.name, o.orderId, o.totalAmount, o.status;",
+    "records": [
+      {
+        "c.name": "Aarav",
+        "o.orderId": 401,
+        "o.totalAmount": 220,
+        "o.status": "Delivered"
+      }
+    ],
+    "time_ms": 40
+  }
+]

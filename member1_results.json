@@ -1,0 +1,368 @@
+[
+  {
+    "id": "M1_Conn",
+    "title": "Connection test",
+    "code": "RETURN 'Neo4j is working' AS status;",
+    "records": [
+      {
+        "status": "Neo4j is working"
+      }
+    ],
+    "time_ms": 8
+  },
+  {
+    "id": "M1_Constraints",
+    "title": "Show Uniqueness Constraints",
+    "code": "SHOW CONSTRAINTS YIELD name, type, entityType, properties;",
+    "records": [
+      {
+        "name": "customer_id_unique",
+        "type": "NODE_PROPERTY_UNIQUENESS",
+        "entityType": "NODE",
+        "properties": [
+          "customerId"
+        ]
+      },
+      {
+        "name": "delivery_partner_id_unique",
+        "type": "NODE_PROPERTY_UNIQUENESS",
+        "entityType": "NODE",
+        "properties": [
+          "partnerId"
+        ]
+      },
+      {
+        "name": "food_item_id_unique",
+        "type": "NODE_PROPERTY_UNIQUENESS",
+        "entityType": "NODE",
+        "properties": [
+          "itemId"
+        ]
+      },
+      {
+        "name": "order_id_unique",
+        "type": "NODE_PROPERTY_UNIQUENESS",
+        "entityType": "NODE",
+        "properties": [
+          "orderId"
+        ]
+      },
+      {
+        "name": "payment_id_unique",
+        "type": "NODE_PROPERTY_UNIQUENESS",
+        "entityType": "NODE",
+        "properties": [
+          "paymentId"
+        ]
+      },
+      {
+        "name": "review_id_unique",
+        "type": "NODE_PROPERTY_UNIQUENESS",
+        "entityType": "NODE",
+        "properties": [
+          "reviewId"
+        ]
+      },
+      {
+        "name": "vendor_id_unique",
+        "type": "NODE_PROPERTY_UNIQUENESS",
+        "entityType": "NODE",
+        "properties": [
+          "vendorId"
+        ]
+      }
+    ],
+    "time_ms": 15
+  },
+  {
+    "id": "M1_7.1",
+    "title": "Count nodes by label (7.1)",
+    "code": "MATCH (n)\nUNWIND labels(n) AS label\nRETURN label, count(*) AS nodeCount\nORDER BY label;",
+    "records": [
+      {
+        "label": "Customer",
+        "nodeCount": 4
+      },
+      {
+        "label": "DeliveryPartner",
+        "nodeCount": 3
+      },
+      {
+        "label": "FoodItem",
+        "nodeCount": 6
+      },
+      {
+        "label": "Order",
+        "nodeCount": 5
+      },
+      {
+        "label": "Payment",
+        "nodeCount": 5
+      },
+      {
+        "label": "Review",
+        "nodeCount": 3
+      },
+      {
+        "label": "Vendor",
+        "nodeCount": 4
+      }
+    ],
+    "time_ms": 25
+  },
+  {
+    "id": "M1_7.2",
+    "title": "Count relationships by type (7.2)",
+    "code": "MATCH ()-[r]->()\nRETURN type(r) AS relationshipType, count(*) AS relationshipCount\nORDER BY relationshipType;",
+    "records": [
+      {
+        "relationshipType": "ABOUT",
+        "relationshipCount": 3
+      },
+      {
+        "relationshipType": "ASSIGNED_TO",
+        "relationshipCount": 3
+      },
+      {
+        "relationshipType": "CONTAINS",
+        "relationshipCount": 6
+      },
+      {
+        "relationshipType": "HAS_PAYMENT",
+        "relationshipCount": 5
+      },
+      {
+        "relationshipType": "PLACES",
+        "relationshipCount": 5
+      },
+      {
+        "relationshipType": "SOLD_BY",
+        "relationshipCount": 8
+      },
+      {
+        "relationshipType": "WROTE",
+        "relationshipCount": 3
+      }
+    ],
+    "time_ms": 22
+  },
+  {
+    "id": "M1_7.3",
+    "title": "Check customer-to-order-to-item-to-vendor paths (7.3)",
+    "code": "MATCH (c:Customer)-[:PLACES]->(o:Order)\n      -[:CONTAINS]->(f:FoodItem)\n      -[:SOLD_BY]->(v:Vendor)\nRETURN c.name, o.orderId, f.name, v.name\nORDER BY o.orderId;",
+    "records": [
+      {
+        "c.name": "Aarav",
+        "o.orderId": 401,
+        "f.name": "Paneer Biryani",
+        "v.name": "Spice House"
+      },
+      {
+        "c.name": "Diya",
+        "o.orderId": 402,
+        "f.name": "Masala Dosa",
+        "v.name": "Pasta Point"
+      },
+      {
+        "c.name": "Diya",
+        "o.orderId": 402,
+        "f.name": "Masala Dosa",
+        "v.name": "Spice House"
+      },
+      {
+        "c.name": "Diya",
+        "o.orderId": 402,
+        "f.name": "Veg Salad Bowl",
+        "v.name": "Green Bowl"
+      },
+      {
+        "c.name": "Aarav",
+        "o.orderId": 403,
+        "f.name": "Pasta Alfredo",
+        "v.name": "Pasta Point"
+      },
+      {
+        "c.name": "Kabir",
+        "o.orderId": 404,
+        "f.name": "Veg Noodles",
+        "v.name": "Pasta Point"
+      },
+      {
+        "c.name": "Kabir",
+        "o.orderId": 404,
+        "f.name": "Veg Noodles",
+        "v.name": "Wok Express"
+      },
+      {
+        "c.name": "Meera",
+        "o.orderId": 405,
+        "f.name": "Margherita Pizza",
+        "v.name": "Pasta Point"
+      }
+    ],
+    "time_ms": 54
+  },
+  {
+    "id": "M1_7.5",
+    "title": "Confirm required labels exist (7.5)",
+    "code": "MATCH (n)\nRETURN DISTINCT labels(n) AS nodeLabels\nORDER BY nodeLabels;",
+    "records": [
+      {
+        "nodeLabels": [
+          "Customer"
+        ]
+      },
+      {
+        "nodeLabels": [
+          "DeliveryPartner"
+        ]
+      },
+      {
+        "nodeLabels": [
+          "FoodItem"
+        ]
+      },
+      {
+        "nodeLabels": [
+          "Order"
+        ]
+      },
+      {
+        "nodeLabels": [
+          "Payment"
+        ]
+      },
+      {
+        "nodeLabels": [
+          "Review"
+        ]
+      },
+      {
+        "nodeLabels": [
+          "Vendor"
+        ]
+      }
+    ],
+    "time_ms": 18
+  },
+  {
+    "id": "M1_CustVend",
+    "title": "Customer and vendor sample data",
+    "code": "MATCH (c:Customer), (v:Vendor) RETURN c.name, c.email, v.name, v.cuisine, v.location LIMIT 5;",
+    "records": [
+      {
+        "c.name": "Diya",
+        "c.email": "diya@example.com",
+        "v.name": "Pasta Point",
+        "v.cuisine": "Italian",
+        "v.location": "Chennai"
+      },
+      {
+        "c.name": "Diya",
+        "c.email": "diya@example.com",
+        "v.name": "Green Bowl",
+        "v.cuisine": "Healthy",
+        "v.location": "Chennai"
+      },
+      {
+        "c.name": "Diya",
+        "c.email": "diya@example.com",
+        "v.name": "Spice House",
+        "v.cuisine": "Indian",
+        "v.location": "Chennai"
+      },
+      {
+        "c.name": "Diya",
+        "c.email": "diya@example.com",
+        "v.name": "Wok Express",
+        "v.cuisine": "Chinese",
+        "v.location": "Chennai"
+      },
+      {
+        "c.name": "Aarav",
+        "c.email": "aarav@example.com",
+        "v.name": "Pasta Point",
+        "v.cuisine": "Italian",
+        "v.location": "Chennai"
+      }
+    ],
+    "time_ms": 28
+  },
+  {
+    "id": "M1_ItemVend",
+    "title": "FoodItem-to-Vendor relationships",
+    "code": "MATCH (f:FoodItem)-[:SOLD_BY]->(v:Vendor) RETURN f.name AS item, f.price AS price, v.name AS vendor ORDER BY f.price DESC;",
+    "records": [
+      {
+        "item": "Margherita Pizza",
+        "price": 280,
+        "vendor": "Pasta Point"
+      },
+      {
+        "item": "Pasta Alfredo",
+        "price": 260,
+        "vendor": "Pasta Point"
+      },
+      {
+        "item": "Paneer Biryani",
+        "price": 220,
+        "vendor": "Spice House"
+      },
+      {
+        "item": "Veg Noodles",
+        "price": 190,
+        "vendor": "Pasta Point"
+      },
+      {
+        "item": "Veg Noodles",
+        "price": 190,
+        "vendor": "Wok Express"
+      },
+      {
+        "item": "Veg Salad Bowl",
+        "price": 180,
+        "vendor": "Green Bowl"
+      },
+      {
+        "item": "Masala Dosa",
+        "price": 120,
+        "vendor": "Pasta Point"
+      },
+      {
+        "item": "Masala Dosa",
+        "price": 120,
+        "vendor": "Spice House"
+      }
+    ],
+    "time_ms": 22
+  },
+  {
+    "id": "M1_PayDeliv",
+    "title": "Payment, delivery partner and review relationships",
+    "code": "MATCH (o:Order)-[:HAS_PAYMENT]->(p:Payment), (o)-[:ASSIGNED_TO]->(d:DeliveryPartner) RETURN o.orderId, p.amount, p.method, d.name AS partner, d.availability;",
+    "records": [
+      {
+        "o.orderId": 401,
+        "p.amount": 220,
+        "p.method": "UPI",
+        "partner": "Rohan",
+        "d.availability": "Busy"
+      },
+      {
+        "o.orderId": 402,
+        "p.amount": 380,
+        "p.method": "Card",
+        "partner": "Isha",
+        "d.availability": "Available"
+      },
+      {
+        "o.orderId": 403,
+        "p.amount": 260,
+        "p.method": "UPI",
+        "partner": "Dev",
+        "d.availability": "Busy"
+      }
+    ],
+    "time_ms": 30
+  }
+]
